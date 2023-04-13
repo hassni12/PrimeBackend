@@ -1,40 +1,45 @@
-const { DataTypes, Sequelize } = require("sequelize");
+const { DataTypes,Sequelize } = require("sequelize");
 const connection = require("../utils/connection");
 const moment = require("moment");
 const { User } = require("./user");
 const Joi = require("joi");
 
-const admin_commision = connection.define(
-  "admin_commision",
+const admin_settings = connection.define(
+  "admin_settings",
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    value: {
-      type: DataTypes.DOUBLE(20, 8),
+    commission: {
+      type: DataTypes.FLOAT,
+    },
+    marketApiKey:{
+      type:DataTypes.FLOAT
     },
     created_at: {
       type: DataTypes.DATE,
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      defaultValue:  Sequelize.literal('CURRENT_TIMESTAMP'),
     },
   },
   {
-    tableName: "admin_commision",
+    tableName: "admin_settings",
     timestamps: false,
   }
 );
 
 function validatesv(req) {
   const schema = Joi.object({
-    value: Joi.required(),
+    pk:Joi.required(),
+    commission: Joi.optional(),
+    marketApiKey: Joi.optional(),
   });
 
   return schema.validate(req);
 }
 
 module.exports = {
-  admin_commision,
+  admin_settings,
   validatesv,
 };

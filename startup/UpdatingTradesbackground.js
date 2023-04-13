@@ -5,6 +5,7 @@ const { Admin_Watchlist } = require("../models/admin_watchlist");
 const CoinMarket = require("../models/coin_market");
 const cryptoSymbols=require("../symbols")
 const { Op } = require("sequelize");
+const { admin_settings } = require("../models/admin_setting");
 
 module.exports = async () => {
   try {
@@ -46,7 +47,12 @@ module.exports = async () => {
 };
 
 const getCoinMarketData = async () => {
-  let url = config.get("MarketApi");
+  
+  let apikey = await admin_settings.findAll({
+    limit: 1,
+    order: [["id", "DESC"]],
+  })[0];
+  let url =apikey?.marketApiKey?`https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=${apikey.marketApiKey}&start=1&limit=350&convert=USD`:config.get("MarketApi");
   console.log(url);
   return await axios.get(url).catch((error) => console.log(error));
 };

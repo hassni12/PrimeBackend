@@ -12,7 +12,10 @@ const activeTradeHistory = require("../routes/trade_history");
 const coinMarketRouter = require("../routes/coin_market");
 const profileUpdateRouter = require("../routes/user_update");
 const adminNotifyRouter = require("../routes/notifications");
-const adminCommisionRouter=require("../routes/admin_commission")
+const adminSettingRouter=require("../routes/admin_commission");
+const adminPackagesRouter=require("../routes/package");
+const packagePurchaseRouter=require("../routes/purchase");
+
 
 var corsOptions = {
   origin: "*",
@@ -39,5 +42,7 @@ module.exports = function (app) {
   app.use("/coinmarket", coinMarketRouter);
   app.use("/api/profile/", profileUpdateRouter);
   app.use("/api/admin/notification/", adminNotifyRouter);
-  app.use("/api/addmincommision",adminCommisionRouter)
+  app.use("/api/setting",adminSettingRouter)
+  app.use("/api/package",adminPackagesRouter)
+  app.use("/api/purchase",packagePurchaseRouter)
 };

@@ -8,7 +8,7 @@ const IsAdminOrUser = require("../middlewares/AuthMiddleware");
 const router = express.Router();
 const Joi = require("joi");
 const { Sequelize, Op } = require("sequelize");
-const { admin_commision } = require("../models/admin_commission");
+const { admin_settings } = require("../models/admin_setting");
 
 // router.use(IsAdminOrUser);
 
@@ -95,12 +95,12 @@ router.post("/", IsAdminOrUser, async (req, res) => {
         .send("Wallet missing, report your problem to admin.");
 
 
-    let commission = await admin_commision.findAll({
+    let commission = await admin_settings.findAll({
       limit: 1,
       order: [["id", "DESC"]],
     });
 
-    commission = commission[0] ? commission[0].value / 100 : 0.030;
+    commission = commission[0] ? commission[0].commission / 100 : 0.030;
     req.body.investment = parseFloat(req.body.investment);
 
     if (req.body.investment > checkWallet.balance || req.body.investment <= 0)
@@ -151,7 +151,7 @@ router.post("/partial", IsAdminOrUser, async (req, res) => {
       order: [["id", "DESC"]],
     });
 
-    commission = commission[0] ? commission[0].value / 100 : 0.030;
+    commission = commission[0] ? commission[0].commission / 100 : 0.030;
     let sale_price = parseFloat(req.body.crypto_sale_price);
     const remainingTrade = trade.trade - parseFloat(partial_trade_close_amount);
     trade.partialy_closed += parseFloat(partial_trade_close_amount);
@@ -318,7 +318,7 @@ router.delete("/:crypto_name/:user_id", async (req, res) => {
       order: [["id", "DESC"]],
     });
 
-    commission = commission[0] ? commission[0].value / 100 : 0.015;
+    commission = commission[0] ? commission[0].commission / 100 : 0.015;
     for (const trade of trades) {
       let sale_price = parseFloat(req.body.crypto_sale_price);
       let profloss =

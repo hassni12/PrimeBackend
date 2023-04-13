@@ -1,16 +1,16 @@
 const express = require("express");
-const { admin_commision, validatesv } = require("../models/admin_commission");
+const { admin_settings, validatesv } = require("../models/admin_setting");
 const IsAdminOrUser = require("../middlewares/AuthMiddleware");
 const router = express.Router();
 router.use(IsAdminOrUser);
 router.get("/", async (req, res) => {
   try {
-    const getValue = await admin_commision.findAll({
+    const settings = await admin_settings.findAll({
       limit: 1,
       order: [["id", "DESC"]],
     });
-    if (!getValue.length > 0) return res.send({ value: 0 });
-    return res.send(getValue[0]);
+    if (!settings.length > 0) return res.send({ value: 0 });
+    return res.send(settings[0]);
   } catch (error) {
     return res.send({ message: error.message });
   }
@@ -21,13 +21,20 @@ router.post("/", async (req, res) => {
     const { error } = validatesv(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    req.body.value = parseFloat(req.body.value);
+   const settings=await admin_settings.findOne({where:{id:req.body.pk}})
 
-    await admin_commision.create(req.body);
+   if(!settings){
+    await admin_settings.create(req.body)
+   }else{
+     await settings.update(
+       { ...req.body },
+       { returning: true, where: { id: req.body.pk } }
+     );
+   }
 
-    return res.send("Request Sent successfully");
+    return res.send("settings updated");
   } catch (error) {
-    return res.send({ message: error.message });
+    return res.send(error.message);
   }
 });
 
