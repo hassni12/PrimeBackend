@@ -6,7 +6,7 @@ const logger = require("./winston");
 function send(to, subject, text, verifyToken) {
   logger.info("insider email function");
   const transporter = nodemailer.createTransport({
-    service: "mail.az1-ts102.a2hosting.com",
+    host: "mail.bitx.gold",
     port:465,
     auth: config.get("mailconf"),
   });
