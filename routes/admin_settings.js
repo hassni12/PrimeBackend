@@ -9,7 +9,7 @@ router.get("/", async (req, res) => {
       limit: 1,
       order: [["id", "DESC"]],
     });
-    if (!settings.length > 0) return res.send({ value: 0 });
+    if (!settings.length > 0) return res.send({ });
     return res.send(settings[0]);
   } catch (error) {
     return res.send({ message: error.message });
