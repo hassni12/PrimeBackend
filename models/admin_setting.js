@@ -16,7 +16,7 @@ const admin_settings = connection.define(
       type: DataTypes.FLOAT,
     },
     marketApiKey:{
-      type:DataTypes.FLOAT
+      type:DataTypes.STRING
     },
     created_at: {
       type: DataTypes.DATE,
