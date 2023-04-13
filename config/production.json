@@ -1,0 +1,22 @@
+{
+  "en": "production",
+  "DBCONFIG": {
+    "USERNAME": "letsorga_primeWeb",
+    "DATABASE": "letsorga_primeWeb",
+    "PASSWORD": "letsorga_primeWeb",
+    "HOST": "az1-ts102.a2hosting.com"
+  },
+  "cloudinary": {
+    "cloud_name": "mansoorcloud",
+    "api_key": "475838235114589",
+    "api_secret": "VqT5klF59dCMOLr58Xsnk2syymk"
+  },
+  "mailconf": {
+    "user": "noreply@letsorganic.com",
+    "pass": "Sulaiman#1"
+  },
+  "jwtPrivateKey": "privateKey",
+  "MarketApi": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=9d0902ad-5eaa-47bd-aeb2-7a110b028b7d&start=1&limit=350&convert=USD",
+  "baseurl": "https://primecrypto.logicsyard.com",
+  "SENDGRID_API_KEY": "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"
+}
