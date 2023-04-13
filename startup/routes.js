@@ -12,7 +12,7 @@ const activeTradeHistory = require("../routes/trade_history");
 const coinMarketRouter = require("../routes/coin_market");
 const profileUpdateRouter = require("../routes/user_update");
 const adminNotifyRouter = require("../routes/notifications");
-const adminSettingRouter=require("../routes/admin_commission");
+const adminSettingRouter=require("../routes/admin_settings");
 const adminPackagesRouter=require("../routes/package");
 const packagePurchaseRouter=require("../routes/purchase");
 
