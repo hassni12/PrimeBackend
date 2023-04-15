@@ -51,10 +51,10 @@ const getCoinMarketData = async () => {
   let apikey = await admin_settings.findAll({
     limit: 1,
     order: [["id", "DESC"]],
-  })[0];
-  let url =apikey?.marketApiKey?`https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=${apikey.marketApiKey}&start=1&limit=350&convert=USD`:config.get("MarketApi");
+  });
+  let url =apikey[0]?.marketApiKey?`https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=${apikey[0].marketApiKey}&start=1&limit=350&convert=USD`:config.get("MarketApi");
   console.log(url);
-  return await axios.get(url).catch((error) => console.log(error));
+  return await axios.get(url).catch(err=>console.log(err));
 };
 
 const filterWithAdminWatchlist = async (coins) => {
