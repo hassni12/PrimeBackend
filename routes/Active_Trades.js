@@ -100,7 +100,7 @@ router.post("/", IsAdminOrUser, async (req, res) => {
       order: [["id", "DESC"]],
     });
 
-    commission = commission[0] ? commission[0].commission / 100 : 0.030;
+    commission = commission[0] ? commission[0].commission / 100 : 0.000;
     req.body.investment = parseFloat(req.body.investment);
 
     if (req.body.investment > checkWallet.balance || req.body.investment <= 0)
@@ -146,12 +146,12 @@ router.post("/partial", IsAdminOrUser, async (req, res) => {
     if (!trade) return res.status(404).send("Trade not Found");
     const wallet = await Wallet.findOne({ where: { user_id: trade.user_id } });
 
-    let commission = await admin_commision.findAll({
+    let commission = await admin_settings.findAll({
       limit: 1,
       order: [["id", "DESC"]],
     });
 
-    commission = commission[0] ? commission[0].commission / 100 : 0.030;
+    commission = commission[0] ? commission[0].commission / 100 : 0.000;
     let sale_price = parseFloat(req.body.crypto_sale_price);
     const remainingTrade = trade.trade - parseFloat(partial_trade_close_amount);
     trade.partialy_closed += parseFloat(partial_trade_close_amount);
@@ -258,7 +258,7 @@ router.delete("/:id", async (req, res) => {
     if (!trade) return res.status(404).send("Trade not Found");
     const wallet = await Wallet.findOne({ where: { user_id: trade.user_id } });
 
-    let commission = await admin_commision.findAll({
+    let commission = await admin_settings.findAll({
       limit: 1,
       order: [["id", "DESC"]],
     });
