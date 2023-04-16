@@ -3,7 +3,7 @@ const axios = require("axios");
 const { Active_Trade } = require("../models/active_trades");
 const { Admin_Watchlist } = require("../models/admin_watchlist");
 const CoinMarket = require("../models/coin_market");
-const cryptoSymbols=require("../symbols")
+const cryptoSymbols = require("../symbols")
 const { Op } = require("sequelize");
 const { admin_settings } = require("../models/admin_setting");
 
@@ -19,7 +19,7 @@ module.exports = async () => {
     if (data.length === 0) return console.log("returned from data");
     if (active_trades.length > 0) {
       active_trades.forEach((x) => {
-        const { crypto_name, purchase_units, take_profit, stop_loss } = x;
+        const { crypto_name, crypto_purchase_price, purchase_units, take_profit, stop_loss, crypto_Original_price } = x;
         data.forEach((i) => {
           // console.log("looping data");
           if (i.name === crypto_name) {
@@ -30,10 +30,10 @@ module.exports = async () => {
 
             if (val >= take_profit + x.trade && take_profit !== 0) {
               console.log("in profit");
-              deleteTrade(x.id, price);
+              deleteTrade(x.id, crypto_purchase_price, crypto_Original_price);
             } else if (val <= x.trade - stop_loss && stop_loss !== 0) {
               console.log("in loss");
-              deleteTrade(x.id, price);
+              deleteTrade(x.id, crypto_purchase_price, crypto_Original_price);
             }
           }
         });
@@ -47,14 +47,14 @@ module.exports = async () => {
 };
 
 const getCoinMarketData = async () => {
-  
+
   let apikey = await admin_settings.findAll({
     limit: 1,
     order: [["id", "DESC"]],
   });
-  let url =apikey[0]?.marketApiKey?`https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=${apikey[0].marketApiKey}&start=1&limit=350&convert=USD`:config.get("MarketApi");
+  let url = apikey[0]?.marketApiKey ? `https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=${apikey[0].marketApiKey}&start=1&limit=350&convert=USD` : config.get("MarketApi");
   console.log(url);
-  return await axios.get(url).catch(err=>console.log(err));
+  return await axios.get(url).catch(err => console.log(err));
 };
 
 const filterWithAdminWatchlist = async (coins) => {
@@ -92,18 +92,18 @@ const filterWithAdminWatchlist = async (coins) => {
       });
       const removeUnusedCoins = extractAndFilterCoinData.filter(c =>
         cryptoSymbols.includes(c.symbol)
-      );      
+      );
       const filterOnExtraction = removeUnusedCoins.map(
         (c) => {
-          if(todeleteCoins.includes(c.name)){
+          if (todeleteCoins.includes(c.name)) {
             return {
               ...c,
-              allow:false,
+              allow: false,
             }
-          }else{
+          } else {
             return {
               ...c,
-              allow:true,
+              allow: true,
             }
           }
         }
@@ -133,7 +133,7 @@ const filterWithAdminWatchlist = async (coins) => {
   }
 };
 
-const deleteTrade = async (id, price) => {
+const deleteTrade = async (id, price, crypto_Original_price) => {
   console.log(id, price);
   let url = config.get("baseurl");
   console.log(url);
@@ -141,6 +141,7 @@ const deleteTrade = async (id, price) => {
     .delete(`${url}/api/activetrade/` + id, {
       data: {
         crypto_sale_price: price,
+        crypto_Original_price: crypto_Original_price
       },
     })
     .catch((error) => console.log(error));

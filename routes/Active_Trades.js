@@ -100,7 +100,7 @@ router.post("/", IsAdminOrUser, async (req, res) => {
       order: [["id", "DESC"]],
     });
 
-    commission = commission[0] ? commission[0].commission / 100 : 0.000;
+    commission = commission[0] ? commission[0].commission / 100 : 0.015;
     req.body.investment = parseFloat(req.body.investment);
 
     if (req.body.investment > checkWallet.balance || req.body.investment <= 0)
@@ -151,7 +151,7 @@ router.post("/partial", IsAdminOrUser, async (req, res) => {
       order: [["id", "DESC"]],
     });
 
-    commission = commission[0] ? commission[0].commission / 100 : 0.000;
+    commission = commission[0] ? commission[0].commission / 100 : 0.015;
     let sale_price = parseFloat(req.body.crypto_sale_price);
     const remainingTrade = trade.trade - parseFloat(partial_trade_close_amount);
     trade.partialy_closed += parseFloat(partial_trade_close_amount);
@@ -313,29 +313,32 @@ router.delete("/:crypto_name/:user_id", async (req, res) => {
     if (!trades.length > 0) return res.status(404).send("Trades not Found");
     const wallet = await Wallet.findOne({ where: { user_id: req.params.user_id } });
 
-    let commission = await admin_commision.findAll({
+    let commission = await admin_settings.findAll({
       limit: 1,
       order: [["id", "DESC"]],
     });
 
     commission = commission[0] ? commission[0].commission / 100 : 0.015;
+
     for (const trade of trades) {
       let sale_price = parseFloat(req.body.crypto_sale_price);
+
       let profloss =
-        (sale_price - trade.crypto_purchase_price) * trade.purchase_units;
+        (req.body.crypto_Original_price - sale_price) * trade.purchase_units;
+
       let history = {
         trade_id: trade.id,
         user_id: trade.user_id,
         crypto_name: trade.crypto_name,
         crypto_symbol: trade.crypto_symbol,
-        crypto_purchase_price: trade.crypto_purchase_price,
+        crypto_purchase_price: trade.crypto_Original_price,
         crypto_sale_price: sale_price,
         investment: trade.investment,
         open_trade: trade.trade,
         purchase_units: trade.purchase_units,
         open_at: moment(trade.invested_date).format("YYYY-MM-DD HH:mm"),
+        open_admin_profit: trade.admin_profit,
       };
-      profloss += trade.trade;
 
       let actualprofloss = profloss;
       if (actualprofloss > 0) {
@@ -346,11 +349,7 @@ router.delete("/:crypto_name/:user_id", async (req, res) => {
         history.actual_loss = actualprofloss;
         history.actual_profit = 0;
       }
-      let adminProfit = profloss * commission;
-      profloss -= adminProfit;
-      wallet.balance += profloss;
-      history.close_trade = profloss;
-      history.open_admin_profit = trade.admin_profit;
+      wallet.balance = wallet.balance + (profloss + trade.investment);
       history.close_admin_profit = 0;
       await Trade_History.create(history);
     }
