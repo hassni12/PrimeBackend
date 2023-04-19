@@ -59,7 +59,7 @@
     "SNX",
     "STORJ",
     "ZRX",
-    "CELO",
+   // "CELO",
     "SUSHI",
     "QNT",
     "BAL",
@@ -67,7 +67,7 @@
     "SHIBxM",
     "AMP",
     "AXS",
-    "SGB",
+   // "SGB",
     "SAND",
     "AVAX",
     "LUNA2",
@@ -82,9 +82,9 @@
     "KNC",
     "ARB",
   
-    "ENG",
-    "USDC",
-    "USDT",
+   // "ENG",
+    //"USDC",
+    //"USDT",
   ]
   
   
