@@ -129,79 +129,88 @@ router.post("/", IsAdminOrUser, async (req, res) => {
 
 router.post("/partial", IsAdminOrUser, async (req, res) => {
   try {
-    const { error } = partialTradeValidate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
     const trade = await Active_Trade.findOne({
       where: { id: req.body.trade_id },
     });
-
     const { partial_trade_close_amount } = req.body;
+    const { error } = partialTradeValidate(req.body);
 
-    if (
+    if (error) return res.status(400).send(error.details[0].message);
+
+
+    else if (
       parseFloat(partial_trade_close_amount) >= trade.trade ||
       parseFloat(partial_trade_close_amount) <= 0
-    )
+    ) {
       return res.status(400).send("Invalid partial trade close amount.");
-    console.log(trade)
-    if (!trade) return res.status(404).send("Trade not Found");
-    const wallet = await Wallet.findOne({ where: { user_id: trade.user_id } });
-
-    let commission = await admin_settings.findAll({
-      limit: 1,
-      order: [["id", "DESC"]],
-    });
-
-    commission = commission[0] ? commission[0].commission / 100 : 0.015;
-    let sale_price = parseFloat(req.body.crypto_sale_price);
-    const remainingTrade = trade.trade - parseFloat(partial_trade_close_amount);
-    trade.partialy_closed += parseFloat(partial_trade_close_amount);
-    const remain_units =
-      trade.purchase_units - remainingTrade / trade.crypto_purchase_price;
-
-    let history = {
-      trade_id: trade.id,
-      user_id: trade.user_id,
-      crypto_name: trade.crypto_name,
-      crypto_symbol: trade.crypto_symbol,
-      crypto_purchase_price: trade.crypto_Original_price,
-      crypto_sale_price: sale_price,
-      investment: trade.investment,
-      open_trade: trade.trade,
-      partial_user_value: parseFloat(partial_trade_close_amount),
-      purchase_units: trade.purchase_units,
-      remaining_units: remainingTrade / trade.crypto_purchase_price,
-      partial_units: parseFloat(partial_trade_close_amount) / trade.crypto_purchase_price,
-      open_at: moment(trade.invested_date).format("YYYY-MM-DD HH:mm"),
-      trade_type: req.body.trade_type,
-    };
-    console.log("partial", history)
-    let profloss =
-      (trade.crypto_Original_price - sale_price) * history.partial_units
-
-    let actualprofloss = profloss;
-    if (actualprofloss > 0) {
-      history.actual_profit = actualprofloss;
-      history.actual_loss = 0;
-    } else if (actualprofloss < 0) {
-      history.actual_loss = actualprofloss;
-      history.actual_profit = 0;
     }
 
-    wallet.balance = wallet.balance + (profloss + history.partial_user_value);
 
-    history.open_admin_profit = (trade.crypto_purchase_price - trade.crypto_Original_price) * history.partial_units;
-    //hasnain change
-    history.purchase_units = history.partial_units;
-    history.investment = history.partial_user_value;
-    await Trade_History.create(history);
-    trade.trade = remainingTrade;
-    trade.purchase_units -= remain_units;
-    trade.admin_profit = trade.admin_profit - history.open_admin_profit;
-    trade.investment = trade.investment - history.partial_user_value;
-    await wallet.save();
-    await trade.save();
+    else if (!trade) return res.status(404).send("Trade not Found");
+    else {
 
-    return res.send("Trade Closed Partially");
+
+
+      const wallet = await Wallet.findOne({ where: { user_id: trade.user_id } });
+
+      let commission = await admin_settings.findAll({
+        limit: 1,
+        order: [["id", "DESC"]],
+      });
+
+      commission = commission[0] ? commission[0].commission / 100 : 0.015;
+      let sale_price = parseFloat(req.body.crypto_sale_price);
+      const remainingTrade = trade.trade - parseFloat(partial_trade_close_amount);
+      trade.partialy_closed += parseFloat(partial_trade_close_amount);
+      const remain_units =
+        trade.purchase_units - remainingTrade / trade.crypto_purchase_price;
+
+      let history = {
+        trade_id: trade.id,
+        user_id: trade.user_id,
+        crypto_name: trade.crypto_name,
+        crypto_symbol: trade.crypto_symbol,
+        crypto_purchase_price: trade.crypto_Original_price,
+        crypto_sale_price: sale_price,
+        investment: trade.investment,
+        open_trade: trade.trade,
+        partial_user_value: parseFloat(partial_trade_close_amount),
+        purchase_units: trade.purchase_units,
+        remaining_units: remainingTrade / trade.crypto_purchase_price,
+        partial_units: parseFloat(partial_trade_close_amount) / trade.crypto_purchase_price,
+        open_at: trade.invested_date,
+        trade_type: req.body.trade_type,
+      };
+      console.log("partial", history)
+      let profloss =
+        (trade.crypto_Original_price - sale_price) * history.partial_units
+
+      let actualprofloss = profloss;
+      if (actualprofloss > 0) {
+        history.actual_profit = actualprofloss;
+        history.actual_loss = 0;
+      } else if (actualprofloss < 0) {
+        history.actual_loss = actualprofloss;
+        history.actual_profit = 0;
+      }
+
+      wallet.balance = wallet.balance + (profloss + history.partial_user_value);
+
+      history.open_admin_profit = (trade.crypto_purchase_price - trade.crypto_Original_price) * history.partial_units;
+      //hasnain change
+      history.purchase_units = history.partial_units;
+      history.investment = history.partial_user_value;
+      await Trade_History.create(history);
+      trade.trade = remainingTrade;
+      trade.purchase_units -= remain_units;
+      trade.admin_profit = trade.admin_profit - history.open_admin_profit;
+      trade.investment = trade.investment - history.partial_user_value;
+      await wallet.save();
+      await trade.save();
+
+      return res.send("Trade Closed Partially");
+    }
+
   } catch (error) {
     return res.send(error.message);
   }
@@ -251,53 +260,57 @@ router.put("/update/:id", IsAdminOrUser, async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     // console.log(req.body.crypto_sale_price);
-
+    const trade = await Active_Trade.findOne({ where: { id: req.params.id } });
     if (!req.params.id || !req.body.crypto_sale_price)
       return res.status(400).send("Trede id or sale price is missing.");
-    const trade = await Active_Trade.findOne({ where: { id: req.params.id } });
-    if (!trade) return res.status(404).send("Trade not Found");
-    const wallet = await Wallet.findOne({ where: { user_id: trade.user_id } });
 
-    let commission = await admin_settings.findAll({
-      limit: 1,
-      order: [["id", "DESC"]],
-    });
+    else if (!trade) return res.status(404).send("Trade not Found");
+    else {
 
-    let sale_price = parseFloat(req.body.crypto_sale_price);
+      const wallet = await Wallet.findOne({ where: { user_id: trade.user_id } });
 
-    let profloss =
-      (req.body.crypto_Original_price - sale_price) * trade.purchase_units;
+      let commission = await admin_settings.findAll({
+        limit: 1,
+        order: [["id", "DESC"]],
+      });
 
-    let history = {
-      trade_id: trade.id,
-      user_id: trade.user_id,
-      crypto_name: trade.crypto_name,
-      crypto_symbol: trade.crypto_symbol,
-      crypto_purchase_price: trade.crypto_Original_price,
-      crypto_sale_price: sale_price,
-      investment: trade.investment,
-      open_trade: trade.trade,
-      purchase_units: trade.purchase_units,
-      open_at: moment(trade.invested_date).format("YYYY-MM-DD HH:mm"),
-      open_admin_profit: trade.admin_profit,
-    };
-    //profloss += trade.trade;
+      let sale_price = parseFloat(req.body.crypto_sale_price);
 
-    let actualprofloss = profloss;
-    if (actualprofloss > 0) {
-      history.actual_profit = actualprofloss;
-      history.actual_loss = 0;
-      console.log("inprof");
-    } else if (actualprofloss < 0) {
-      history.actual_loss = actualprofloss;
-      history.actual_profit = 0;
+      let profloss =
+        (req.body.crypto_Original_price - sale_price) * trade.purchase_units;
+
+      let history = {
+        trade_id: trade.id,
+        user_id: trade.user_id,
+        crypto_name: trade.crypto_name,
+        crypto_symbol: trade.crypto_symbol,
+        crypto_purchase_price: trade.crypto_Original_price,
+        crypto_sale_price: sale_price,
+        investment: trade.investment,
+        open_trade: trade.trade,
+        purchase_units: trade.purchase_units,
+        open_at: trade.invested_date,
+        open_admin_profit: trade.admin_profit,
+      };
+      //profloss += trade.trade;
+
+      let actualprofloss = profloss;
+      if (actualprofloss > 0) {
+        history.actual_profit = actualprofloss;
+        history.actual_loss = 0;
+        console.log("inprof");
+      } else if (actualprofloss < 0) {
+        history.actual_loss = actualprofloss;
+        history.actual_profit = 0;
+      }
+      wallet.balance = wallet.balance + (profloss + trade.investment);
+      history.close_admin_profit = 0;
+      await Trade_History.create(history);
+      await wallet.save();
+      await trade.destroy();
+      return res.send("Trade Closed");
     }
-    wallet.balance = wallet.balance + (profloss + trade.investment);
-    history.close_admin_profit = 0;
-    await Trade_History.create(history);
-    await wallet.save();
-    await trade.destroy();
-    return res.send("Trade Closed");
+
   } catch (error) {
     return res.send(error.message);
   }
@@ -336,7 +349,7 @@ router.delete("/:crypto_name/:user_id", async (req, res) => {
         investment: trade.investment,
         open_trade: trade.trade,
         purchase_units: trade.purchase_units,
-        open_at: moment(trade.invested_date).format("YYYY-MM-DD HH:mm"),
+        open_at: trade.invested_date,
         open_admin_profit: trade.admin_profit,
       };
 

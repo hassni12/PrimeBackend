@@ -72,7 +72,8 @@ const Trade_History = connection.define(
       type: DataTypes.DOUBLE(20, 8),
     },
     open_at: {
-      type: DataTypes.STRING,
+      type: DataTypes.DATE,
+      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
     },
     closed_at: {
       type: DataTypes.DATE,

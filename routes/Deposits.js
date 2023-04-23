@@ -71,23 +71,30 @@ router.put("/:id", async (req, res) => {
 
     if (!depositRequest) return res.status(404).send("request not found.");
 
-    depositRequest.status = req.body.status;
-    depositRequest.status_description = req.body.status_description
-      ? req.body.status_description
-      : "reason not specified";
 
-    const userWallet = await Wallet.findOne({
-      where: { user_id: depositRequest.user_id },
-    });
-    if (!userWallet) return res.status(404).send("Wallet not found");
+    if (depositRequest.status !== "approved") {
+      depositRequest.status = req.body.status;
+      depositRequest.status_description = req.body.status_description
+        ? req.body.status_description
+        : "reason not specified";
 
-    if (req.body.status === "approved") {
-      userWallet.balance += parseFloat(depositRequest.amount);
-      await userWallet.save();
+      const userWallet = await Wallet.findOne({
+        where: { user_id: depositRequest.user_id },
+      });
+      if (!userWallet) return res.status(404).send("Wallet not found");
+
+      if (req.body.status === "approved") {
+        userWallet.balance += parseFloat(depositRequest.amount);
+        await userWallet.save();
+      }
+      await depositRequest.save();
+
+      return res.status(200).send("updated");
     }
-    await depositRequest.save();
+    else {
+      return res.status(400).send("request already approved");
+    }
 
-    return res.status(200).send("updated");
   } catch (error) {
     return res.send(error.message);
   }
