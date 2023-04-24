@@ -37,7 +37,7 @@ router.get("/:user_id", async (req, res) => {
       where: { user_id: req.params.user_id },
       order: [['requested_at', 'DESC']]
     });
-    
+
     return res.send(getAllRequestsByUserId);
   } catch (error) {
     return res.send({ message: error.message });
@@ -71,30 +71,40 @@ router.post("/", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    if (!req.params.id) return res.status(400).send("Id is not provided.");
-
     const WithdrawRequest = await Withdraw.findOne({
       where: { id: req.params.id },
     });
 
-    if (!WithdrawRequest) return res.status(404).send("request not found.");
-
-    WithdrawRequest.status = req.body.status;
-    WithdrawRequest.status_description = req.body.status_description
-      ? req.body.status_description
-      : "reason not specified";
 
     const userWallet = await Wallet.findOne({
       where: { user_id: WithdrawRequest.user_id },
     });
-    if (!userWallet) return res.status(404).send("Wallet not found");
-    if (req.body.status === "canceled") {
+    if (!req.params.id) return res.status(400).send("Id is not provided.");
+    else if (!WithdrawRequest) return res.status(404).send("request not found.");
+    else if (WithdrawRequest.status === "canceled") return res.status(406).send("request already completed or canceled");
+    else if (WithdrawRequest.status === "approved") return res.status(406).send("request already completed or canceled");
+    else if (!userWallet) return res.status(404).send("Wallet not found");
+    else if (WithdrawRequest.status === "pending" && req.body.status === "canceled") {
+      WithdrawRequest.status = req.body.status;
+      WithdrawRequest.status_description = req.body.status_description
+        ? req.body.status_description
+        : "reason not specified";
       userWallet.balance += parseFloat(WithdrawRequest.amount);
       await userWallet.save();
-    }
-    await WithdrawRequest.save();
+      await WithdrawRequest.save();
 
-    return res.status(200).send("updated");
+      return res.status(200).send("updated");
+    }
+    else if (WithdrawRequest.status === "pending" && req.body.status === "approved") {
+      WithdrawRequest.status = req.body.status;
+      WithdrawRequest.status_description = req.body.status_description
+        ? req.body.status_description
+        : "reason not specified";
+      await WithdrawRequest.save();
+    }
+    else
+      return res.status(406).send("Invalid status");
+
   } catch (error) {
     return res.send(error.message);
   }
