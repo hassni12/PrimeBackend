@@ -23,6 +23,9 @@ const Withdraw = connection.define(
       type: DataTypes.TEXT,
       defaultValue: "Wait while we process your request",
     },
+    withdraw_type:{
+      type: DataTypes.STRING,
+    },
     requested_at: {
       type: DataTypes.DATE,
       defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
@@ -48,6 +51,7 @@ Withdraw.belongsTo(User, {
 
 function validateW(req) {
   const schema = Joi.object({
+    withdraw_type:Joi.required(),
     amount: Joi.required(),
     user_id: Joi.required(),
   });
