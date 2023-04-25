@@ -13,6 +13,8 @@ const coinMarketRouter = require("../routes/coin_market");
 const profileUpdateRouter = require("../routes/user_update");
 const adminNotifyRouter = require("../routes/notifications");
 const adminSettingRouter=require("../routes/admin_settings");
+const bankdetailRouter=require("../routes/bankd_details")
+
 // const adminPackagesRouter=require("../routes/package");
 // const packagePurchaseRouter=require("../routes/purchase");
 
@@ -43,6 +45,7 @@ module.exports = function (app) {
   app.use("/api/profile/", profileUpdateRouter);
   app.use("/api/admin/notification/", adminNotifyRouter);
   app.use("/api/setting",adminSettingRouter)
+  app.use("/api/bankdetail",bankdetailRouter)
   // app.use("/api/package",adminPackagesRouter)
   // app.use("/api/purchase",packagePurchaseRouter)
 };
