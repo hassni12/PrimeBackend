@@ -159,18 +159,20 @@ router.post("/partial", IsAdminOrUser, async (req, res) => {
       });
 
       commission = commission[0] ? commission[0].commission / 100 : 0.015;
-      let sale_price = parseFloat(req.body.crypto_sale_price);
+      let sale_price = parseFloat(req.body.crypto_Original_price);
+
       const remainingTrade = trade.trade - parseFloat(partial_trade_close_amount);
       trade.partialy_closed += parseFloat(partial_trade_close_amount);
       const remain_units =
         trade.purchase_units - remainingTrade / trade.crypto_purchase_price;
+
 
       let history = {
         trade_id: trade.id,
         user_id: trade.user_id,
         crypto_name: trade.crypto_name,
         crypto_symbol: trade.crypto_symbol,
-        crypto_purchase_price: trade.crypto_Original_price,
+        crypto_purchase_price: trade.crypto_purchase_price,
         crypto_sale_price: sale_price,
         investment: trade.investment,
         open_trade: trade.trade,
@@ -181,9 +183,9 @@ router.post("/partial", IsAdminOrUser, async (req, res) => {
         open_at: trade.invested_date,
         trade_type: req.body.trade_type,
       };
-      console.log("partial", history)
+      console.log("partial", history);
       let profloss =
-        (trade.crypto_Original_price - sale_price) * history.partial_units
+        (req.body.crypto_Original_price - req.body.crypto_sale_price) * history.partial_units
 
       let actualprofloss = profloss;
       if (actualprofloss > 0) {
@@ -274,17 +276,17 @@ router.delete("/:id", async (req, res) => {
         order: [["id", "DESC"]],
       });
 
-      let sale_price = parseFloat(req.body.crypto_sale_price);
+      let sale_price = parseFloat(req.body.crypto_Original_price);
 
       let profloss =
-        (req.body.crypto_Original_price - sale_price) * trade.purchase_units;
+        (req.body.crypto_Original_price - req.body.crypto_sale_price) * trade.purchase_units;
 
       let history = {
         trade_id: trade.id,
         user_id: trade.user_id,
         crypto_name: trade.crypto_name,
         crypto_symbol: trade.crypto_symbol,
-        crypto_purchase_price: trade.crypto_Original_price,
+        crypto_purchase_price: trade.crypto_purchase_price,
         crypto_sale_price: sale_price,
         investment: trade.investment,
         open_trade: trade.trade,
