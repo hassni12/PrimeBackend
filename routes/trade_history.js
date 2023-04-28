@@ -3,14 +3,20 @@ const router = express.Router();
 const IsAdminOrUser = require("../middlewares/AuthMiddleware");
 const Trade_History = require("../models/trade_history");
 const { User } = require("../models/user");
+const { Active_Trade } = require("../models/active_trades");
 router.use(IsAdminOrUser);
 
 router.get("/admincommission", async (req, res) => {
   try {
     const tradeHistory = await Trade_History.findAll();
+    const activeTrades=await Active_Trade.findAll();
+
     let totalCommission = 0;
     for (const trade of tradeHistory) {
       totalCommission += trade.open_admin_profit;
+    }
+    for (const activetrade of activeTrades) {
+      totalCommission += activetrade.admin_profit;
     }
     return res.send({ totalCommission });
   } catch (error) {
