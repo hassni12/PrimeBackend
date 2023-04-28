@@ -17,6 +17,9 @@ const Notifications = connection.define(
     status: {
       type: DataTypes.STRING,
     },
+    hide:{
+      type: DataTypes.STRING,
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue:Sequelize.literal('CURRENT_TIMESTAMP'),
