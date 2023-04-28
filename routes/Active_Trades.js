@@ -127,6 +127,49 @@ router.post("/", IsAdminOrUser, async (req, res) => {
   }
 });
 
+
+router.put("/:id", IsAdminOrUser, async (req, res) => {
+  try {
+    if (!req.params.id) return res.status(400).send("Id is required.");
+    const { error } = validatetradeupdate(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const checkTrade = await Active_Trade.findOne({
+      where: { id: req.params.id },
+    });
+    if (!checkTrade)
+      return res.status(404).send("No Trade Found With This ID.");
+
+    checkTrade.take_profit = parseFloat(req.body.take_profit);
+    checkTrade.stop_loss = parseFloat(req.body.stop_loss);
+
+    checkTrade.save();
+    return res.send("Updated");
+  } catch (error) {
+    return res.send(error.message);
+  }
+});
+router.put("/update/:id", IsAdminOrUser, async (req, res) => {
+  try {
+    if (!req.params.id) return res.status(400).send("trade id is required.");
+    if (!req.body.is_commissioned) return res.status(400).send("Is Commissioned Field is required.");
+
+    const trade = await Active_Trade.findOne({
+      where: { id: req.params.id },
+    })
+    if (!trade) return res.status(404).send("Trade With The Given Id Is Not Found.");
+
+    trade.is_commissioned = req.body.is_commissioned;
+    await trade.save();
+    return res.send("Trade Updated");
+
+  } catch (error) {
+    return res.status(400).send(err)
+  }
+})
+
+
+
 router.post("/partial", IsAdminOrUser, async (req, res) => {
   try {
     const trade = await Active_Trade.findOne({
@@ -159,18 +202,20 @@ router.post("/partial", IsAdminOrUser, async (req, res) => {
       });
 
       commission = commission[0] ? commission[0].commission / 100 : 0.015;
-      let sale_price = parseFloat(req.body.crypto_sale_price);
+      let sale_price = parseFloat(req.body.crypto_Original_price);
+
       const remainingTrade = trade.trade - parseFloat(partial_trade_close_amount);
       trade.partialy_closed += parseFloat(partial_trade_close_amount);
       const remain_units =
         trade.purchase_units - remainingTrade / trade.crypto_purchase_price;
+
 
       let history = {
         trade_id: trade.id,
         user_id: trade.user_id,
         crypto_name: trade.crypto_name,
         crypto_symbol: trade.crypto_symbol,
-        crypto_purchase_price: trade.crypto_Original_price,
+        crypto_purchase_price: trade.crypto_purchase_price,
         crypto_sale_price: sale_price,
         investment: trade.investment,
         open_trade: trade.trade,
@@ -181,12 +226,13 @@ router.post("/partial", IsAdminOrUser, async (req, res) => {
         open_at: trade.invested_date,
         trade_type: req.body.trade_type,
       };
-      console.log("partial", history)
+      console.log("partial", history);
       let profloss =
-        (trade.crypto_Original_price - sale_price) * history.partial_units
+        (req.body.crypto_Original_price - trade.crypto_purchase_price) * history.partial_units
 
       let actualprofloss = profloss;
       if (actualprofloss > 0) {
+
         history.actual_profit = actualprofloss;
         history.actual_loss = 0;
       } else if (actualprofloss < 0) {
@@ -216,47 +262,6 @@ router.post("/partial", IsAdminOrUser, async (req, res) => {
   }
 });
 
-router.put("/:id", IsAdminOrUser, async (req, res) => {
-  try {
-    if (!req.params.id) return res.status(400).send("Id is required.");
-    const { error } = validatetradeupdate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
-
-    const checkTrade = await Active_Trade.findOne({
-      where: { id: req.params.id },
-    });
-    if (!checkTrade)
-      return res.status(404).send("No Trade Found With This ID.");
-
-    checkTrade.take_profit = parseFloat(req.body.take_profit);
-    checkTrade.stop_loss = parseFloat(req.body.stop_loss);
-
-    checkTrade.save();
-    return res.send("Updated");
-  } catch (error) {
-    return res.send(error.message);
-  }
-});
-
-router.put("/update/:id", IsAdminOrUser, async (req, res) => {
-  try {
-    if (!req.params.id) return res.status(400).send("trade id is required.");
-    if (!req.body.is_commissioned) return res.status(400).send("Is Commissioned Field is required.");
-
-    const trade = await Active_Trade.findOne({
-      where: { id: req.params.id },
-    })
-    if (!trade) return res.status(404).send("Trade With The Given Id Is Not Found.");
-
-    trade.is_commissioned = req.body.is_commissioned;
-    await trade.save();
-    return res.send("Trade Updated");
-
-  } catch (error) {
-    return res.status(400).send(err)
-  }
-})
-
 router.delete("/:id", async (req, res) => {
   try {
     // console.log(req.body.crypto_sale_price);
@@ -274,18 +279,18 @@ router.delete("/:id", async (req, res) => {
         order: [["id", "DESC"]],
       });
 
-      let sale_price = parseFloat(req.body.crypto_sale_price);
+      let sale_price = parseFloat(req.body.crypto_Original_price);
 
       let profloss =
-        (req.body.crypto_Original_price - sale_price) * trade.purchase_units;
+        (req.body.crypto_Original_price - trade.crypto_purchase_price) * trade.purchase_units;
 
       let history = {
         trade_id: trade.id,
         user_id: trade.user_id,
         crypto_name: trade.crypto_name,
         crypto_symbol: trade.crypto_symbol,
-        crypto_purchase_price: trade.crypto_Original_price,
-        crypto_sale_price: sale_price,
+        crypto_purchase_price: trade.crypto_purchase_price,
+        crypto_sale_price: req.body.crypto_Original_price,
         investment: trade.investment,
         open_trade: trade.trade,
         purchase_units: trade.purchase_units,
@@ -316,6 +321,11 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+
+
+
+
+
 router.delete("/:crypto_name/:user_id", async (req, res) => {
   try {
     // console.log(req.body.crypto_sale_price);
@@ -345,7 +355,7 @@ router.delete("/:crypto_name/:user_id", async (req, res) => {
         crypto_name: trade.crypto_name,
         crypto_symbol: trade.crypto_symbol,
         crypto_purchase_price: trade.crypto_Original_price,
-        crypto_sale_price: sale_price,
+        crypto_sale_price: req.body.crypto_sale_price,
         investment: trade.investment,
         open_trade: trade.trade,
         purchase_units: trade.purchase_units,
