@@ -26,6 +26,22 @@ router.get("/admincommission", async (req, res) => {
 
 router.get("/getall", async (req, res) => {
   try {
+    const activeTrades=await Active_Trade.findAll({
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: [
+            "user_name",
+            "first_name",
+            "last_name",
+            "email",
+            "contact",
+          ],
+        },
+      ],
+      order: [["closed_at", "DESC"]],
+    });
     const findHistoryUserId = await Trade_History.findAll({
       include: [
         {
@@ -54,7 +70,9 @@ router.get("/getall", async (req, res) => {
       return trade;
     });
 
-    return res.send(findHistoryUserId);
+    const combinedData=[...activeTrades,...findHistoryUserId]
+
+    return res.send(combinedData);
   } catch (error) {
     return res.send(error.message);
   }
