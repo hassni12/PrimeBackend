@@ -56,7 +56,7 @@ router.delete("/:user_id", async (req, res) => {
     if (!checkIfExist) return res.status(404).send("not found");
 
     await checkIfExist.destroy();
-    return res.send("deleted successfuly");
+    return res.send("Deleted Successfully");
   } catch (error) {
     return res.send(error.message);
   }

@@ -21,7 +21,7 @@ router.put(
         where: { id: req.params.user_id },
       });
       if (!checkUser)
-        return res.status(404).send("User Not Found With The Given Id.");
+        return res.status(404).send("No User Found WIth Given ID");
 
       const cloudinaryLink = await cloudinary.uploader.upload(req.file.path);
       checkUser.avatar = cloudinaryLink.secure_url;
@@ -42,7 +42,7 @@ router.put("/passwordchange/:user_id", async (req, res) => {
 
     const checkUser = await User.findOne({ where: { id: req.params.user_id } });
     if (!checkUser)
-      return res.status(404).send("User Not Found With The Given Id.");
+      return res.status(404).send("No User Found WIth Given ID");
 
     const validPassword = await COMPARE_PASSWORD(
       req.body.password,
@@ -53,7 +53,7 @@ router.put("/passwordchange/:user_id", async (req, res) => {
     checkUser.password = newPassword;
     await checkUser.save();
 
-    return res.send("Password Updated.");
+    return res.send("Password Updated");
   } catch (error) {
     return res.send(error.message);
   }
@@ -72,7 +72,7 @@ router.put("/:user_id", async (req, res) => {
     }
     const checkUser = await User.findOne({ where: { id: req.params.user_id } });
     if (!checkUser)
-      return res.status(404).send("User Not Found With The Given Id.");
+      return res.status(404).send("No User Found WIth Given ID");
 
     await User.update(
       { ...req.body },
@@ -110,7 +110,7 @@ function validateFieldsToUpdate(req) {
     last_name: Joi.string().optional(),
     email: Joi.string().email().optional(),
     contact: Joi.string().optional(),
-    is_active_user:Joi.boolean().optional()
+    is_active_user: Joi.boolean().optional()
   });
 
   return schema.validate(req);

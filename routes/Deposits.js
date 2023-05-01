@@ -81,7 +81,7 @@ router.put("/:id", async (req, res) => {
       const userWallet = await Wallet.findOne({
         where: { user_id: depositRequest.user_id },
       });
-      if (!userWallet) return res.status(404).send("Wallet not found");
+      if (!userWallet) return res.status(404).send("Wallet Not Found");
 
       if (req.body.status === "approved") {
         userWallet.balance += parseFloat(depositRequest.amount);
@@ -110,7 +110,7 @@ router.delete("/:id", async (req, res) => {
     if (!checkIfExist) return res.status(404).send("not found");
 
     await checkIfExist.destroy();
-    return res.send("deleted successfuly");
+    return res.send("Deleted Successfully");
   } catch (error) {
     return res.send(error.message);
   }

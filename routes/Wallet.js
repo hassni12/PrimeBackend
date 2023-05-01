@@ -20,7 +20,7 @@ router.get("/:user_id", async (req, res) => {
     const findWalletWithUserId = await Wallet.findOne({
       where: { user_id: req.params.user_id },
     });
-    if (!findWalletWithUserId) return res.send("Wallet not found").status(404);
+    if (!findWalletWithUserId) return res.send("Wallet Not Found").status(404);
     return res.send(findWalletWithUserId);
   } catch (error) {
     return res.send(error.message);
@@ -35,7 +35,7 @@ router.put("/:user_id", async (req, res) => {
     const findWalletWithUserId = await Wallet.findOne({
       where: { user_id: req.params.user_id },
     });
-    if (!findWalletWithUserId) return res.send("Wallet not found").status(404);
+    if (!findWalletWithUserId) return res.send("Wallet Not Found").status(404);
 
     findWalletWithUserId.balance = req.body.balance;
     await findWalletWithUserId.save();

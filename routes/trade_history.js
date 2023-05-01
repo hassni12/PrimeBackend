@@ -9,7 +9,7 @@ router.use(IsAdminOrUser);
 router.get("/admincommission", async (req, res) => {
   try {
     const tradeHistory = await Trade_History.findAll();
-    const activeTrades=await Active_Trade.findAll();
+    const activeTrades = await Active_Trade.findAll();
 
     let totalCommission = 0;
     for (const trade of tradeHistory) {
@@ -109,7 +109,7 @@ router.delete("/:id", async (req, res) => {
     });
     if (!findHistoryUserId) return res.status(404).send("History not found");
     await findHistoryUserId.destroy();
-    return res.send("deleted successfully");
+    return res.send("Deleted Successfully");
   } catch (error) {
     return res.send(error.message);
   }
