@@ -83,7 +83,7 @@ router.put("/:id", async (req, res) => {
     else if (!WithdrawRequest) return res.status(404).send("request not found.");
     else if (WithdrawRequest.status === "canceled") return res.status(406).send("request already completed or canceled");
     else if (WithdrawRequest.status === "approved") return res.status(406).send("request already completed or canceled");
-    else if (!userWallet) return res.status(404).send("Wallet not found");
+    else if (!userWallet) return res.status(404).send("Wallet Not Found");
     else if (WithdrawRequest.status === "pending" && req.body.status === "canceled") {
       WithdrawRequest.status = req.body.status;
       WithdrawRequest.status_description = req.body.status_description
@@ -103,7 +103,7 @@ router.put("/:id", async (req, res) => {
       await WithdrawRequest.save();
     }
     else
-      return res.status(406).send("Invalid status");
+      return res.status(406).send("Invalid Status");
 
   } catch (error) {
     return res.send(error.message);
@@ -120,7 +120,7 @@ router.delete("/:id", async (req, res) => {
     if (!checkIfExist) return res.status(404).send("not found");
 
     await checkIfExist.destroy();
-    return res.send("deleted successfuly");
+    return res.send("Deleted Successfully");
   } catch (error) {
     return res.send(error.message);
   }

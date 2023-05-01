@@ -267,7 +267,7 @@ router.delete("/:id", async (req, res) => {
     // console.log(req.body.crypto_sale_price);
     const trade = await Active_Trade.findOne({ where: { id: req.params.id } });
     if (!req.params.id || !req.body.crypto_sale_price)
-      return res.status(400).send("Trede id or sale price is missing.");
+      return res.status(400).send("Trade ID or Sale Price Missing");
 
     else if (!trade) return res.status(404).send("Trade not Found");
     else {
@@ -331,7 +331,7 @@ router.delete("/:crypto_name/:user_id", async (req, res) => {
     // console.log(req.body.crypto_sale_price);
 
     if (!req.params.id || !req.body.crypto_sale_price)
-      return res.status(400).send("Trede id or sale price is missing.");
+      return res.status(400).send("Trade ID or Sale Price Missing");
     const trades = await Active_Trade.findAll({ where: { user_id: req.params.user_id, crypto_name: req.params.crypto_name } });
     if (!trades.length > 0) return res.status(404).send("Trades not Found");
     const wallet = await Wallet.findOne({ where: { user_id: req.params.user_id } });

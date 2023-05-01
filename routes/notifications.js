@@ -24,10 +24,10 @@ router.post("/", async (req, res) => {
     const { error } = validateN(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const notif=await Notifications.create(req.body);
+    const notif = await Notifications.create(req.body);
 
     req.io.emit("newNotification", notif)
-    return res.send("Notification Added.");
+    return res.send("Notification Added");
   } catch (error) {
     return res.send(error.message);
   }
@@ -36,12 +36,12 @@ router.post("/", async (req, res) => {
 router.put("/single/:id", async (req, res) => {
   try {
     if (!req.params.id)
-      return res.status(400).send("Please Provide Id To Update The Record Status.");
-    if(!req.body.user_id)
+      return res.status(400).send("Please Provide ID to Update Record Status");
+    if (!req.body.user_id)
       return res.status(400).send("User Id is required");
-    const checkNotification = await Notifications.findAll({where:{id:req.params.id}});
+    const checkNotification = await Notifications.findAll({ where: { id: req.params.id } });
     if (!checkNotification.length > 0)
-      return res.status(404).send("Notifications Not Found.");
+      return res.status(404).send("Notifications Not Found");
 
     checkNotification.forEach((noti) => {
       if (noti.status) {
@@ -62,7 +62,7 @@ router.put("/single/:id", async (req, res) => {
       noti.save();
     });
 
-    req.io.emit("newNotification",{message:"Read"});
+    req.io.emit("newNotification", { message: "Read" });
     return res.send("status updated.");
   } catch (error) {
     return res.send(error.message);
@@ -74,11 +74,11 @@ router.put("/hide/:id", async (req, res) => {
   try {
     if (!req.params.id)
       return res.status(400).send("Please Provide Id To Update.");
-    if(!req.body.user_id)
+    if (!req.body.user_id)
       return res.status(400).send("User Id is required");
-    const checkNotification = await Notifications.findAll({where:{id:req.params.id}});
+    const checkNotification = await Notifications.findAll({ where: { id: req.params.id } });
     if (!checkNotification.length > 0)
-      return res.status(404).send("Notifications Not Found.");
+      return res.status(404).send("Notifications Not Found");
 
     checkNotification.forEach((noti) => {
       if (noti.hide) {
@@ -99,7 +99,7 @@ router.put("/hide/:id", async (req, res) => {
       noti.save();
     });
 
-    req.io.emit("newNotification",{message:"hidden"});
+    req.io.emit("newNotification", { message: "hidden" });
     return res.send("hidden.");
   } catch (error) {
     return res.send(error.message);
@@ -110,11 +110,11 @@ router.put("/show/:id", async (req, res) => {
   try {
     if (!req.params.id)
       return res.status(400).send("Please Provide Id To Update.");
-    if(!req.body.user_id)
+    if (!req.body.user_id)
       return res.status(400).send("User Id is required");
-    const checkNotification = await Notifications.findAll({where:{id:req.params.id}});
+    const checkNotification = await Notifications.findAll({ where: { id: req.params.id } });
     if (!checkNotification.length > 0)
-      return res.status(404).send("Notifications Not Found.");
+      return res.status(404).send("Notifications Not Found");
 
     checkNotification.forEach((noti) => {
       if (noti.hide) {
@@ -128,7 +128,7 @@ router.put("/show/:id", async (req, res) => {
       }
     });
 
-    req.io.emit("newNotification",{message:"shown"});
+    req.io.emit("newNotification", { message: "shown" });
     return res.send("shown.");
   } catch (error) {
     return res.send(error.message);
@@ -139,11 +139,11 @@ router.put("/show/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     if (!req.params.id)
-      return res.status(400).send("Please Provide Id To Update The Record Status.");
+      return res.status(400).send("Please Provide ID to Update Record Status");
 
     const checkNotification = await Notifications.findAll();
     if (!checkNotification.length > 0)
-      return res.status(404).send("Notifications Not Found.");
+      return res.status(404).send("Notifications Not Found");
 
     checkNotification.forEach((noti) => {
       if (noti.status) {
@@ -163,7 +163,7 @@ router.put("/:id", async (req, res) => {
       }
       noti.save();
     });
-    req.io.emit("newNotification",{message:"Read"})
+    req.io.emit("newNotification", { message: "Read" })
     return res.send("status updated.");
   } catch (error) {
     return res.send(error.message);
@@ -180,7 +180,7 @@ router.delete("/:id", async (req, res) => {
     if (!checkIfExist) return res.status(404).send("not found");
 
     await checkIfExist.destroy();
-    return res.send("deleted successfuly");
+    return res.send("Deleted Successfully");
   } catch (error) {
     return res.send(error.message);
   }
