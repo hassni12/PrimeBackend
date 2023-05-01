@@ -40,7 +40,6 @@ router.get("/getall", async (req, res) => {
           ],
         },
       ],
-      order: [["closed_at", "DESC"]],
     });
     const findHistoryUserId = await Trade_History.findAll({
       include: [
