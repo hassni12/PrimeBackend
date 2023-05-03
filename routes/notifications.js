@@ -99,6 +99,25 @@ router.put("/hide/:id", async (req, res) => {
       noti.save();
     });
 
+    checkNotification.forEach((noti) => {
+      if (noti.status) {
+        let st = noti.status.split(",");
+        let exist = false;
+        st.forEach((t) => {
+          if (parseInt(t) === parseInt(req.body.user_id)) {
+            exist = true;
+          }
+        });
+        if (!exist) {
+          st.push(`${req.body.user_id}`);
+        }
+        noti.status = st.toString();
+      } else {
+        noti.status = `${req.body.user_id}`;
+      }
+      noti.save();
+    });
+
     req.io.emit("newNotification", { message: "hidden" });
     return res.send("hidden.");
   } catch (error) {
