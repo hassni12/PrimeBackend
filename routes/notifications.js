@@ -69,7 +69,6 @@ router.put("/single/:id", async (req, res) => {
   }
 });
 
-
 router.put("/hide/:id", async (req, res) => {
   try {
     if (!req.params.id)
@@ -153,7 +152,6 @@ router.put("/show/:id", async (req, res) => {
     return res.send(error.message);
   }
 })
-
 
 router.put("/:id", async (req, res) => {
   try {
