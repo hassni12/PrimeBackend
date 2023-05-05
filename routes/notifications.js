@@ -69,7 +69,6 @@ router.put("/single/:id", async (req, res) => {
   }
 });
 
-
 router.put("/hide/:id", async (req, res) => {
   try {
     if (!req.params.id)
@@ -95,6 +94,25 @@ router.put("/hide/:id", async (req, res) => {
         noti.hide = st.toString();
       } else {
         noti.hide = `${req.body.user_id}`;
+      }
+      noti.save();
+    });
+
+    checkNotification.forEach((noti) => {
+      if (noti.status) {
+        let st = noti.status.split(",");
+        let exist = false;
+        st.forEach((t) => {
+          if (parseInt(t) === parseInt(req.body.user_id)) {
+            exist = true;
+          }
+        });
+        if (!exist) {
+          st.push(`${req.body.user_id}`);
+        }
+        noti.status = st.toString();
+      } else {
+        noti.status = `${req.body.user_id}`;
       }
       noti.save();
     });
@@ -134,7 +152,6 @@ router.put("/show/:id", async (req, res) => {
     return res.send(error.message);
   }
 })
-
 
 router.put("/:id", async (req, res) => {
   try {

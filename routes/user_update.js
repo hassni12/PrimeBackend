@@ -63,26 +63,39 @@ router.put("/:user_id", async (req, res) => {
   try {
     const { error } = validateFieldsToUpdate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-    if (req.body.user_name) {
+    const checkUser = await User.findOne({ where: { id: req.params.user_id } });
+    if (!checkUser)
+      return res.status(404).send("No User Found With Given ID");
+
+    if (req.body.user_name && req.body.user_name !== checkUser.user_name) {
       let checkUsername = await User.findOne({
         where: { user_name: req.body.user_name },
       });
       if (checkUsername)
         return res.status(400).send("User Name is already taken.");
     }
-    const checkUser = await User.findOne({ where: { id: req.params.user_id } });
-    if (!checkUser)
-      return res.status(404).send("No User Found WIth Given ID");
+
+    if (req.body.email && req.body.email !== checkUser.email) {
+      let checkEmail = await User.findOne({
+        where: { email: req.body.email },
+      })
+      if (checkEmail) {
+        return res.status(400).send("User already registered with this email.")
+      } else {
+        req.body.is_email_verified=false;
+      }
+    }
 
     await User.update(
       { ...req.body },
       { returning: true, where: { id: req.params.user_id } }
     );
-    return res.send("values updated");
+    return res.send("Values updated");
   } catch (error) {
     return res.send(error.message);
   }
 });
+
 
 const passValidate = (req) => {
   const schema = Joi.object({
