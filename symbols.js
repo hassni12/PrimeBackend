@@ -10,7 +10,7 @@ const cryptoSymbols = [
   "DOT",
   "LTC",
   "AVAX",
-  "SHIBxM",
+  "SHIB",
   "TRX",
   "LINK",
   "UNI",
@@ -48,7 +48,7 @@ const cryptoSymbols = [
   "LRC",
   "FLR",
   "DYDX",
-  "INCH",
+  "1INCH",
   "ENJ",
   "BAT",
   "ANKR",
@@ -79,5 +79,4 @@ const cryptoSymbols = [
   "SRM",
 ];
 
-module.exports=cryptoSymbols;
-  
+module.exports = cryptoSymbols;

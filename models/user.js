@@ -1,5 +1,5 @@
 const connection = require("../utils/connection");
-const { DataTypes,Sequelize } = require("sequelize");
+const { DataTypes, Sequelize } = require("sequelize");
 const moment = require("moment");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
@@ -37,8 +37,8 @@ const User = connection.define(
         notNull: { msg: "lastName is required" },
       },
     },
-    contact:{
-      type:DataTypes.STRING,
+    contact: {
+      type: DataTypes.STRING,
     },
     email: {
       type: DataTypes.STRING,
@@ -64,7 +64,7 @@ const User = connection.define(
     },
     created_at: {
       type: DataTypes.DATE,
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     },
   },
   {
@@ -88,7 +88,7 @@ User.prototype.generateJwtToken = function () {
       is_email_verified: this.is_email_verified,
     },
     config.get("jwtPrivateKey") || config.get("defaultjwtPrivateKey"),
-    { expiresIn: "1h"}
+    { expiresIn: "1h" }
   );
 };
 
