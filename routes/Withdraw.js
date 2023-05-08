@@ -101,6 +101,7 @@ router.put("/:id", async (req, res) => {
         ? req.body.status_description
         : "reason not specified";
       await WithdrawRequest.save();
+      return res.status(200).send("updated");
     }
     else
       return res.status(406).send("Invalid Status");
