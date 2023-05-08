@@ -32,10 +32,18 @@ const BankDetails = connection.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    usdt_payout:{
+    usdt_payout: {
       type: DataTypes.STRING,
-      allowNull:false,
-    }
+      allowNull: false,
+    },
+    account_holder: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    network: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
     tableName: "bank_details",
@@ -55,6 +63,8 @@ function validateR(req) {
     bic_swift: Joi.string().optional(),
     usdt_payout: Joi.string().optional(),
     user_id: Joi.number().integer().required(),
+    account_holder: Joi.string().optional(),
+    network: Joi.string().optional(),
   });
 
   return schema.validate(req);
