@@ -31,14 +31,45 @@ router.get("/", async (req, res) => {
 
 router.get("/:user_id", async (req, res) => {
   try {
-    const getAllRequestsByUserId = await Deposit.findAll({
-      where: { user_id: req.params.user_id },
+    console.log(req.user.id ,"id");
+    const depositQuery =
+     Deposit.findAll({
+     
+      where: { user_id: req.params.id },
       order: [['requested_at', 'DESC']]
     });
+    const walletQuery = Wallet.findAll({
+      where: { user_id: req.params.user_id },
+    }); 
+    const [depositResults, walletResults] = await Promise.all([depositQuery, walletQuery]);
+    
 
-    return res.send(getAllRequestsByUserId);
+    return res.json({depositResults, walletResults});
   } catch (error) {
     return res.send({ message: error.message });
+  }
+});
+
+router.get("/wallets/:walletType", async (req, res) => {
+  try {
+    // const userId = req.params.userId;
+    const walletType = req.params.walletType;
+    const allowedWalletTypes = ["ethereum", "tron", "bsc"];
+    if (!allowedWalletTypes.includes(walletType)) {
+      return res.status(400).send("Invalid wallet type.");
+    }
+
+    const wallet = await Wallet.findOne({
+      where: { user_id: req.user.id },
+      attributes: [`${walletType}_wellet`]
+    });
+
+    if (!wallet) {
+      return res.status(404).send(`Wallet not found for the user (${walletType}_wellet).`);
+    }
+    return res.send({wallet:wallet[`${walletType}_wellet`]});
+  } catch (error) {
+    return res.status(500).send(error.message);
   }
 });
 

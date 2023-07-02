@@ -16,9 +16,27 @@ const Wallet = connection.define(
       type: DataTypes.DOUBLE(20, 8),
       defaultValue: 0,
     },
+    ethereum_wellet: {
+      type: DataTypes.TEXT,
+    },
+    ethereum_wellet_key: {
+      type: DataTypes.TEXT,    
+    },
+    tron_wellet: {
+      type: DataTypes.TEXT,
+    },
+    tron_wellet_key: {  
+      type: DataTypes.TEXT,
+    },
+    bsc_wellet: {
+      type: DataTypes.TEXT,
+    },
+    bsc_wellet_key: {
+      type: DataTypes.TEXT,
+    },
     created_at: {
       type: DataTypes.DATE,
-      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+      defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
     },
     user_id: {
       type: DataTypes.INTEGER,

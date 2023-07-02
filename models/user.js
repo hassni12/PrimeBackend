@@ -52,7 +52,7 @@ const User = connection.define(
     },
     is_email_verified: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      defaultValue: true  ,
     },
     is_admin: {
       type: DataTypes.BOOLEAN,

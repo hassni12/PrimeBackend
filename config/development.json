@@ -3,6 +3,7 @@
   "DBCONFIG": {
     "USERNAME": "root",
     "DATABASE": "primecrypto_api",
+    "PASSWORD": "admin",
     "HOST": "localhost",
     "PORT": 3306
   },
@@ -11,11 +12,11 @@
     "api_key": "475838235114589",
     "api_secret": "VqT5klF59dCMOLr58Xsnk2syymk"
   },
-  "mailconf":{
+  "mailconf": {
     "user": "noreply@bitx.gold",
     "pass": "Mubeen#1"
   },
   "jwtPrivateKey": "privateKey",
-  "MarketApi": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=9d0902atttttttd-5eaa-47bd-aeb2-7a110b028b7d&start=1&limit=350&convert=USD",
+  "MarketApi": "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?CMC_PRO_API_KEY=f8a1be93-9e6c-492a-8784-0f179ef78203&start=1&limit=350&convert=USD",
   "baseurl": "http://localhost:5000"
 }
