@@ -3,6 +3,14 @@ const { Deposit, validateD } = require("../models/deposit");
 const { Wallet } = require("../models/wallet");
 const { User } = require("../models/user");
 const IsAdminOrUser = require("../middlewares/AuthMiddleware");
+const { sendUSDT } = require("../utils/bsc.sending");
+const isAdmin = require("../middlewares/AdminMiddleware");
+const { getUSDTBalance } = require("../utils/getBscUSDTBalance");
+const { getEthUSDTBalance } = require("../utils/getEthUSDTBalance");
+const { getTronUSDTBalance } = require("../utils/getTronUSDTBalance");
+
+// getEthUSDTBalance
+// sendUSDT
 const router = express.Router();
 router.use(IsAdminOrUser);
 router.get("/", async (req, res) => {
@@ -21,7 +29,7 @@ router.get("/", async (req, res) => {
           ],
         },
       ],
-      order: [['requested_at', 'DESC']]
+      order: [["requested_at", "DESC"]],
     });
     return res.send(getAllRequests);
   } catch (error) {
@@ -31,20 +39,20 @@ router.get("/", async (req, res) => {
 
 router.get("/:user_id", async (req, res) => {
   try {
-    console.log(req.user.id ,"id");
-    const depositQuery =
-     Deposit.findAll({
-     
+    console.log(req.user.id, "id");
+    const depositQuery = Deposit.findAll({
       where: { user_id: req.params.id },
-      order: [['requested_at', 'DESC']]
+      order: [["requested_at", "DESC"]],
     });
     const walletQuery = Wallet.findAll({
       where: { user_id: req.params.user_id },
-    }); 
-    const [depositResults, walletResults] = await Promise.all([depositQuery, walletQuery]);
-    
+    });
+    const [depositResults, walletResults] = await Promise.all([
+      depositQuery,
+      walletQuery,
+    ]);
 
-    return res.json({depositResults, walletResults});
+    return res.json({ depositResults, walletResults });
   } catch (error) {
     return res.send({ message: error.message });
   }
@@ -61,13 +69,76 @@ router.get("/wallets/:walletType", async (req, res) => {
 
     const wallet = await Wallet.findOne({
       where: { user_id: req.user.id },
-      attributes: [`${walletType}_wellet`]
+      attributes: [`${walletType}_wellet`],
     });
 
     if (!wallet) {
-      return res.status(404).send(`Wallet not found for the user (${walletType}_wellet).`);
+      return res
+        .status(404)
+        .send(`Wallet not found for the user (${walletType}_wellet).`);
     }
-    return res.send({wallet:wallet[`${walletType}_wellet`]});
+    return res.send({ wallet: wallet[`${walletType}_wellet`] });
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+});
+
+router.get("/wallet/Info", isAdmin, async (req, res) => {
+  try {
+    const wallet = await Wallet.findAll({});
+    const balances = [];
+
+    const ethereumPromises = wallet.map((address) => {
+      if (address?.ethereum_wellet) {
+        return getEthUSDTBalance(address?.ethereum_wellet)
+          .then((balance) => {
+            balances.push({ ethAddress: address?.ethereum_wellet, ethbalance:balance });
+            console.log(balances);
+          })
+          .catch((error) => {
+            console.error(
+              `Error fetching balance for Ethereum address:`,
+              error
+            );
+          });
+      }
+    });
+
+    const bscPromises = wallet.map((address) => {
+      if (address?.bsc_wellet) {
+        return getUSDTBalance(address?.bsc_wellet)
+          .then((balance) => {
+            balances.push({ bscAddress: address?.bsc_wellet, bscbalance:balance });
+          })
+          .catch((error) => {
+            console.error(`Error fetching balance for BSC address:`, error);
+          });
+      }
+    });
+
+    const tronPromises = wallet.map((address) => {
+      if (address?.tron_wellet) {
+        return getTronUSDTBalance(address?.tron_wellet)
+          .then((balance) => {
+            balances.push({ tronAddress: address?.tron_wellet, tronbalance:balance });
+          })
+          .catch((error) => {
+            console.error(`Error fetching balance for TRON address:`, error);
+          });
+      }
+    });
+
+    Promise.all([...ethereumPromises, ...bscPromises, ...tronPromises])
+      .then(() => {
+        if (balances.length === 0) {
+          return res.status(404).send(`Wallet not found for the user.`);
+        }
+
+        return res.send({ balances });
+      })
+      .catch((error) => {
+        return res.status(500).send(error.message);
+      });
   } catch (error) {
     return res.status(500).send(error.message);
   }
@@ -102,7 +173,6 @@ router.put("/:id", async (req, res) => {
 
     if (!depositRequest) return res.status(404).send("request not found.");
 
-
     if (depositRequest.status !== "approved") {
       depositRequest.status = req.body.status;
       depositRequest.status_description = req.body.status_description
@@ -121,11 +191,9 @@ router.put("/:id", async (req, res) => {
       await depositRequest.save();
 
       return res.status(200).send("updated");
-    }
-    else {
+    } else {
       return res.status(400).send("request already approved");
     }
-
   } catch (error) {
     return res.send(error.message);
   }

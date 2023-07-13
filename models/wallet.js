@@ -19,19 +19,28 @@ const Wallet = connection.define(
     ethereum_wellet: {
       type: DataTypes.TEXT,
     },
-    ethereum_wellet_key: {
+    ethereum_wellet_key_part1: {
+      type: DataTypes.TEXT,    
+    },
+    ethereum_wellet_key_part2: {
       type: DataTypes.TEXT,    
     },
     tron_wellet: {
       type: DataTypes.TEXT,
     },
-    tron_wellet_key: {  
+    tron_wellet_key_part1: {  
+      type: DataTypes.TEXT,
+    },
+    tron_wellet_key_part2: {  
       type: DataTypes.TEXT,
     },
     bsc_wellet: {
       type: DataTypes.TEXT,
     },
-    bsc_wellet_key: {
+    bsc_wellet_key_part1: {
+      type: DataTypes.TEXT,
+    },
+    bsc_wellet_key_part2: {
       type: DataTypes.TEXT,
     },
     created_at: {

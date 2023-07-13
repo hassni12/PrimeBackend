@@ -14,7 +14,7 @@ const Joi = require("joi");
 const { Sequelize } = require("sequelize");
 const ethers = require("ethers");
 const TronWeb = require("tronweb");
-const NodeRSA = require('node-rsa');
+const NodeRSA = require("node-rsa");
 const tronWeb = new TronWeb({
   fullHost: "https://api.trongrid.io",
 });
@@ -40,44 +40,99 @@ router.post("/register", async (req, res) => {
     const ethWallet = ethers.Wallet.createRandom();
     const bscWallet = ethers.Wallet.createRandom();
     const tronAccount = await tronWeb.createAccount();
-
-    console.log("Ethereum Wallet:");
-    console.log("Address:", ethWallet.address);
-    console.log("Private Key:", ethWallet.privateKey);
-
-    console.log("\nBinance Smart Chain Wallet:");
-    console.log("Address:", bscWallet.address);
-    console.log("Private Key:", bscWallet.privateKey);
-
-    console.log("\nTron Wallet:");
-    console.log("Address:", tronAccount.address.base58);
-    console.log("Private Key:", tronAccount.privateKey);
     const key = new NodeRSA({ b: 512 });
-    const encryptedEthPrivateKey = key.encryptPrivate(
-      ethWallet.privateKey,
+
+    // Splitting and encrypting Ethereum private key
+    // console.log("Ethereum Wallet:");
+    // console.log("Address:", ethWallet.address);
+    console.log("Private Key: tro", tronAccount.privateKey);
+
+    const ethPrivateKey = ethWallet.privateKey;
+    const ethPrivateKeyPart1 = ethPrivateKey.slice(0, ethPrivateKey.length / 2);
+    const ethPrivateKeyPart2 = ethPrivateKey.slice(ethPrivateKey.length / 2);
+
+    const encryptedEthPrivateKeyPart1 = key.encryptPrivate(
+      ethPrivateKeyPart1,
       "base64",
       "utf8"
     );
-    const encryptedBscPrivateKey = key.encryptPrivate(
-      bscWallet.privateKey,
+    const encryptedEthPrivateKeyPart2 = key.encryptPrivate(
+      ethPrivateKeyPart2,
       "base64",
       "utf8"
     );
-    const encryptedTronPrivateKey = key.encryptPrivate(
-      tronAccount.privateKey,
-      
+
+    // console.log(
+    //   "Encrypted Ethereum Private Key Part 1:",
+    //   encryptedEthPrivateKeyPart1
+    // );
+    // console.log(
+    //   "Encrypted Ethereum Private Key Part 2:",
+    //   encryptedEthPrivateKeyPart2
+    // );
+
+    const bscPrivateKey = bscWallet.privateKey;
+    const bscPrivateKeyPart1 = bscPrivateKey.slice(0, bscPrivateKey.length / 2);
+    const bscPrivateKeyPart2 = bscPrivateKey.slice(bscPrivateKey.length / 2);
+
+    const encryptedBscPrivateKeyPart1 = key.encryptPrivate(
+      bscPrivateKeyPart1,
       "base64",
       "utf8"
     );
-   
+    const encryptedBscPrivateKeyPart2 = key.encryptPrivate(
+      bscPrivateKeyPart2,
+      "base64",
+      "utf8"
+    );
+
+    // console.log(
+    //   "Encrypted Binance Smart Chain Private Key Part 1:",
+    //   encryptedBscPrivateKeyPart1
+    // );
+    // console.log(
+    //   "Encrypted Binance Smart Chain Private Key Part 2:",
+    //   encryptedBscPrivateKeyPart2
+    // );
+
+    const tronPrivateKey = tronAccount.privateKey;
+    const tronPrivateKeyPart1 = tronPrivateKey.slice(
+      0,
+      tronPrivateKey.length / 2
+    );
+    const tronPrivateKeyPart2 = tronPrivateKey.slice(tronPrivateKey.length / 2);
+    console.log(tronPrivateKeyPart1, tronPrivateKeyPart2, "parts");
+    const encryptedTronPrivateKeyPart1 = key.encryptPrivate(
+      tronPrivateKeyPart1,
+      "base64",
+      "utf8"
+    );
+    const encryptedTronPrivateKeyPart2 = key.encryptPrivate(
+      tronPrivateKeyPart2,
+      "base64",
+      "utf8"
+    );
+
+    // console.log(
+    //   "Encrypted Tron Private Key Part 1:",
+    //   encryptedTronPrivateKeyPart1
+    // );
+    // console.log(
+    //   "Encrypted Tron Private Key Part 2:",
+    //   encryptedTronPrivateKeyPart2
+    // );
+
     await Wallet.create({
       user_id: createUser.id,
       ethereum_wellet: ethWallet.address,
-      ethereum_wellet_key: encryptedEthPrivateKey,
+      ethereum_wellet_key_part1: encryptedEthPrivateKeyPart1,
+      ethereum_wellet_key_part2: encryptedEthPrivateKeyPart2,
       tron_wellet: tronAccount.address.base58,
-      tron_wellet_key: encryptedTronPrivateKey,
+      tron_wellet_key_part1: encryptedTronPrivateKeyPart1,
+      tron_wellet_key_part2: encryptedTronPrivateKeyPart2,
       bsc_wellet: bscWallet.address,
-      bsc_wellet_key: encryptedBscPrivateKey,
+      bsc_wellet_key_part1: encryptedBscPrivateKeyPart1,
+      bsc_wellet_key_part2: encryptedBscPrivateKeyPart2,
     });
     let id = jwt.sign({ id: createUser.id }, config.get("jwtPrivateKey"), {
       expiresIn: "10m",
@@ -111,7 +166,12 @@ router.post("/login", async (req, res) => {
     if (!user.is_active_user)
       return res.status(400).send("User Blocked, Contact Support");
 
+    if (user.is_admin && !user.passcode) {
+      user.passcode = await ENCRYPT_PASSWORD(req.body.password);
+      await user.save();
+    }
     const token = user.generateJwtToken();
+
     return res.send({ status: true, access: token });
   } catch (error) {
     return res.send(error.message);
@@ -132,6 +192,98 @@ router.post("/accesstoadmin", isAdmin, async (req, res) => {
     return res.send(error.message);
   }
 });
+// fund transfer to user
+router.post(
+  "/accesstoadmin/fund-transfer/:user_id",
+  isAdmin,
+  async (req, res) => {
+    const { passcode, amount } = req.body;
+
+    try {
+      let admin = await User.findOne({ where: { id: req.user.id } });
+      if (!admin) return res.status(400).send("Invalid Email or Password.");
+      const validPasscode = await COMPARE_PASSWORD(passcode, user.passcode);
+
+      if (!validPasscode) return res.status(400).send("Invalid Passcode");
+      if (!req.params.user_id)
+        return res.status(400).send("user id is missing.");
+
+      let user = await Wallet.findOne({
+        where: { user_id: req.params.user_id },
+      });
+
+      // Decrypting the private key parts
+      const decryptedEthPrivateKeyPart1 = key.decryptPrivate(
+        user?.ethereum_wellet_key_part1,
+        "utf8",
+        "base64"
+      );
+      const decryptedEthPrivateKeyPart2 = key.decryptPrivate(
+        user?.ethereum_wellet_key_part2,
+        "utf8",
+        "base64"
+      );
+
+      console.log(
+        "Decrypted Ethereum Private Key Part 1:",
+        decryptedEthPrivateKeyPart1
+      );
+      console.log(
+        "Decrypted Ethereum Private Key Part 2:",
+        decryptedEthPrivateKeyPart2
+      );
+
+      const decryptedBscPrivateKeyPart1 = key.decryptPrivate(
+        encryptedBscPrivateKeyPart1,
+        "utf8",
+        "base64"
+      );
+      const decryptedBscPrivateKeyPart2 = key.decryptPrivate(
+        encryptedBscPrivateKeyPart2,
+        "utf8",
+        "base64"
+      );
+
+      console.log(
+        "Decrypted Binance Smart Chain Private Key Part 1:",
+        decryptedBscPrivateKeyPart1
+      );
+      console.log(
+        "Decrypted Binance Smart Chain Private Key Part 2:",
+        decryptedBscPrivateKeyPart2
+      );
+
+      const decryptedTronPrivateKeyPart1 = key.decryptPrivate(
+        encryptedTronPrivateKeyPart1,
+        "utf8",
+        "base64"
+      );
+      const decryptedTronPrivateKeyPart2 = key.decryptPrivate(
+        encryptedTronPrivateKeyPart2,
+        "utf8",
+        "base64"
+      );
+
+      console.log(
+        "Decrypted Tron Private Key Part 1:",
+        decryptedTronPrivateKeyPart1
+      );
+      console.log(
+        "Decrypted Tron Private Key Part 2:",
+        decryptedTronPrivateKeyPart2
+      );
+      if (!user) return res.status(400).send("Invalid Email Address");
+
+      if (!user.is_email_verified)
+        return res.status(400).send("Account Not Verified");
+
+      const token = user.generateJwtToken();
+      return res.send({ status: true, access: token });
+    } catch (error) {
+      return res.send(error.message);
+    }
+  }
+);
 
 router.post("/email-verify", async (req, res) => {
   try {

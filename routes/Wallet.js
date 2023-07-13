@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const IsAdminOrUser = require("../middlewares/AuthMiddleware");
 const { Wallet, validateWallet } = require("../models/wallet");
+const { Deposit } = require("../models/deposit");
+// 
 router.use(IsAdminOrUser);
 router.post("/", async (req, res) => {
   try {
@@ -43,5 +45,7 @@ router.put("/:user_id", async (req, res) => {
     return res.send(error.message);
   }
 });
+
+
 
 module.exports = router;

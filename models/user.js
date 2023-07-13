@@ -46,13 +46,16 @@ const User = connection.define(
     password: {
       type: DataTypes.STRING,
     },
+    passcode: {
+      type: DataTypes.STRING,
+    },
     avatar: {
       type: DataTypes.STRING,
       defaultValue: null,
     },
     is_email_verified: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true  ,
+      defaultValue: true,
     },
     is_admin: {
       type: DataTypes.BOOLEAN,
@@ -103,6 +106,16 @@ function validate(req) {
       .min(5)
       .max(255)
       .required()
+      .regex(
+        RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})")
+      )
+      .message(
+        "Password must contain at least one uppercase one lowercase one special character and one number "
+      ),
+    passcode: Joi.string()
+      .min(5)
+      .max(255)
+
       .regex(
         RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})")
       )

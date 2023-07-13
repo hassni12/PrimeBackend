@@ -5,7 +5,7 @@ module.exports = function (req, res, next) {
   try {
     const decodetoken = jwt.verify(req.header("x-auth-token"), "privateKey");
     req.user = decodetoken;
-    console.log(decodetoken ,"token decode");
+    // console.log(decodetoken ,"token decode");
     if (decodetoken.is_admin || decodetoken.is_active) {
       next();
     } else {
